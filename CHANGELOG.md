@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] - 2026-04-05
+
+### Added
+- Added a new `docs/` documentation set for wiki/docs-site use, including installation, commands, permissions, placeholders, configuration, GUI, XP bottle behavior, FAQ, and developer notes pages.
+- Added internal Markdown navigation links across documentation pages and a docs landing page at `docs/index.md`.
+
+### Changed
+- Updated `README.md` with a docs navigation section linking to the new `docs/` files.
+
 ## [1.0.2] - 2026-04-05
 
 ### Fixed

@@ -17,6 +17,24 @@ It lets players withdraw exact raw XP points into custom XP bottle items and red
   - `%xpbottle_total_xp%`
   - `%xpbottle_level%`
 
+
+## Documentation
+
+Full project documentation is available in the [`docs/`](docs/) folder.
+
+### Docs Navigation
+
+- [Docs Home](docs/index.md)
+- [Installation](docs/installation.md)
+- [Commands](docs/commands.md)
+- [Permissions](docs/permissions.md)
+- [Configuration](docs/configuration.md)
+- [GUI Guide](docs/gui.md)
+- [XP Bottles](docs/xp-bottles.md)
+- [Placeholders](docs/placeholders.md)
+- [FAQ](docs/faq.md)
+- [Developer Notes](docs/developer-notes.md)
+
 ## Commands
 
 - `/xpbottle` - Open GUI.
