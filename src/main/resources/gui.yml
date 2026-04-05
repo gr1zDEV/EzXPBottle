@@ -1,0 +1,74 @@
+# ==========================================================
+# XPBottle GUI Configuration
+# ==========================================================
+
+gui:
+  title: '&8XP Bottle'
+  size: 27
+
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    name: ' '
+
+  info-item:
+    material: PLAYER_HEAD
+    name: '&bYour XP Status'
+    lore:
+      - '&7Total XP: &f%total_xp%'
+      - '&7Level: &f%level%'
+      - '&8Click preset amounts below to withdraw'
+
+  close-button:
+    slot: 26
+    material: BARRIER
+    name: '&cClose'
+    lore:
+      - '&7Close this menu.'
+
+  # Modes:
+  # disabled -> button hidden and disabled
+  # single_bottle -> create one bottle containing all current XP
+  withdraw-all:
+    mode: single_bottle
+    slot: 22
+    material: EXPERIENCE_BOTTLE
+    name: '&eWithdraw All XP'
+    lore:
+      - '&7Convert all your current XP'
+      - '&7into one custom XP bottle.'
+
+  # Preset amount buttons
+  # %xp% and %amount% can be used in name/lore
+  preset-amounts:
+    amount-10:
+      slot: 10
+      amount: 10
+      material: EXPERIENCE_BOTTLE
+      name: '&aWithdraw %xp% XP'
+      lore:
+        - '&7Create one bottle storing'
+        - '&f%xp% &7raw XP.'
+    amount-50:
+      slot: 12
+      amount: 50
+      material: EXPERIENCE_BOTTLE
+      name: '&aWithdraw %xp% XP'
+      lore:
+        - '&7Create one bottle storing'
+        - '&f%xp% &7raw XP.'
+    amount-100:
+      slot: 14
+      amount: 100
+      material: EXPERIENCE_BOTTLE
+      name: '&aWithdraw %xp% XP'
+      lore:
+        - '&7Create one bottle storing'
+        - '&f%xp% &7raw XP.'
+    amount-500:
+      slot: 16
+      amount: 500
+      material: EXPERIENCE_BOTTLE
+      name: '&aWithdraw %xp% XP'
+      lore:
+        - '&7Create one bottle storing'
+        - '&f%xp% &7raw XP.'
