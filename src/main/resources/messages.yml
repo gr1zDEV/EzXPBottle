@@ -1,0 +1,26 @@
+# ==========================================================
+# XPBottle Messages
+# ==========================================================
+
+messages:
+  no-permission: '&cYou do not have permission to do that.'
+  player-only: '&cOnly players can use this command.'
+  player-not-found: '&cPlayer not found: &f%player%&c.'
+  invalid-amount: '&cPlease enter a valid positive XP amount.'
+  not-enough-xp: '&cYou do not have enough XP for that action.'
+
+  withdrew-xp: '&aYou withdrew &f%xp% &aXP into a custom bottle.'
+  redeemed-xp: '&aYou redeemed &f%xp% &aXP from a custom bottle.'
+
+  gave-bottle: '&aYou gave &f%player% &aa custom XP bottle containing &f%xp% &aXP.'
+  received-bottle: '&aYou received a custom XP bottle containing &f%xp% &aXP.'
+
+  reload-success: '&aXPBottle configurations reloaded successfully.'
+
+  help-lines:
+    - '&b&lXPBottle &8- &7Help'
+    - '&f/xpbottle &8- &7Open the XP bottle GUI'
+    - '&f/xpbottle withdraw <amount> &8- &7Withdraw exact XP into one bottle'
+    - '&f/xpbottle give <player> <amount> &8- &7Give a custom XP bottle'
+    - '&f/xpbottle reload &8- &7Reload config files'
+    - '&f/xpbottle help &8- &7Show this help'

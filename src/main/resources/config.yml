@@ -1,0 +1,22 @@
+# ==========================================================
+# XPBottle - Main Configuration
+# Author: EzInnovations
+# ==========================================================
+
+# GUI behavior settings
+gui:
+  # If true, the GUI reopens/refreshed after a successful withdraw from GUI buttons.
+  refresh-on-withdraw: true
+
+# Redeem behavior settings
+redeem:
+  # If true, sneaking + right-clicking a custom bottle redeems the entire same stack in-hand.
+  shift-right-click-redeem-all: true
+
+# Sound settings
+sounds:
+  enabled: true
+  # Sound played on successful withdraw
+  withdraw: ENTITY_EXPERIENCE_ORB_PICKUP
+  # Sound played on successful redeem
+  redeem: ENTITY_PLAYER_LEVELUP

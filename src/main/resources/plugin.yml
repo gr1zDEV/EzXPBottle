@@ -1,0 +1,31 @@
+name: XPBottle
+main: com.ezinnovations.xpbottle.XPBottlePlugin
+version: ${project.version}
+api-version: '1.20'
+authors:
+  - EzInnovations
+softdepend:
+  - PlaceholderAPI
+
+commands:
+  xpbottle:
+    description: Main command for XPBottle.
+    usage: /xpbottle [help|withdraw|reload|give]
+    aliases: [xpb]
+
+permissions:
+  xpbottle.use:
+    description: Allows opening the XPBottle GUI.
+    default: true
+  xpbottle.withdraw:
+    description: Allows withdrawing XP into custom bottles.
+    default: true
+  xpbottle.reload:
+    description: Allows reloading XPBottle configuration files.
+    default: op
+  xpbottle.give:
+    description: Allows giving custom XP bottles to players.
+    default: op
+  xpbottle.redeem:
+    description: Allows redeeming custom XP bottles.
+    default: true

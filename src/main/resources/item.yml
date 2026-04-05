@@ -1,0 +1,19 @@
+# ==========================================================
+# XPBottle Item Configuration
+# ==========================================================
+
+item:
+  # Default custom bottle material
+  material: EXPERIENCE_BOTTLE
+
+  # Cosmetic glow enchant effect
+  glow: true
+
+  # Set to 0 to disable custom model data
+  custom-model-data: 0
+
+  # %xp% placeholder is replaced with exact stored XP amount
+  name: '&bXP Bottle &7(&f%xp% XP&7)'
+  lore:
+    - '&7Stored XP: &f%xp%'
+    - '&8Right-click to redeem exact XP.'
