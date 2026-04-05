@@ -1,7 +1,7 @@
 name: XPBottle
 main: com.ezinnovations.xpbottle.XPBottlePlugin
 version: ${project.version}
-api-version: '1.20'
+api-version: '1.21'
 authors:
   - EzInnovations
 softdepend:
