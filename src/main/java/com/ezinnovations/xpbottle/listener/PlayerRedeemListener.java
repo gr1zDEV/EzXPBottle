@@ -14,8 +14,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.entity.ExpBottleEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.ThrownExpBottle;
 
 public class PlayerRedeemListener implements Listener {
 
@@ -45,12 +48,14 @@ public class PlayerRedeemListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (!player.hasPermission("xpbottle.redeem")) {
+        ItemStack item = event.getItem();
+        if (!itemManager.isPluginBottle(item)) {
             return;
         }
 
-        ItemStack item = event.getItem();
-        if (!itemManager.isPluginBottle(item)) {
+        if (!player.hasPermission("xpbottle.redeem")) {
+            event.setCancelled(true);
+            messageManager.send(player, "messages.no-permission");
             return;
         }
 
@@ -60,6 +65,7 @@ public class PlayerRedeemListener implements Listener {
         }
 
         event.setCancelled(true);
+        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
 
         FileConfiguration config = configManager.getMainConfig();
         boolean shiftRedeemAllEnabled = config.getBoolean("redeem.shift-right-click-redeem-all", true) && player.isSneaking();
@@ -82,6 +88,32 @@ public class PlayerRedeemListener implements Listener {
             } catch (IllegalArgumentException ignored) {
                 // Invalid sound, safely skip.
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onLaunch(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof ThrownExpBottle bottle)) {
+            return;
+        }
+        if (!(bottle.getShooter() instanceof Player player)) {
+            return;
+        }
+
+        ItemStack thrownItem = bottle.getItem();
+        if (!itemManager.isPluginBottle(thrownItem)) {
+            return;
+        }
+
+        event.setCancelled(true);
+        bottle.remove();
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onExpBottle(ExpBottleEvent event) {
+        if (itemManager.isPluginBottle(event.getEntity().getItem())) {
+            event.setExperience(0);
+            event.setShowEffect(false);
         }
     }
 
