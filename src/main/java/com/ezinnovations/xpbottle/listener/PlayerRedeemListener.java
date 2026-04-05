@@ -48,7 +48,10 @@ public class PlayerRedeemListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        ItemStack item = event.getItem();
+        ItemStack item = player.getInventory().getItem(hand);
+        if (item == null) {
+            item = event.getItem();
+        }
         if (!itemManager.isPluginBottle(item)) {
             return;
         }
