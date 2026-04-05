@@ -8,6 +8,11 @@ messages:
   player-not-found: '&cPlayer not found: &f%player%&c.'
   invalid-amount: '&cPlease enter a valid positive XP amount.'
   not-enough-xp: '&cYou do not have enough XP for that action.'
+  unknown-subcommand: '&cUnknown subcommand. Use &f/xpbottle help&c.'
+  withdraw-usage: '&cUsage: &f/xpbottle withdraw <amount>'
+  give-usage: '&cUsage: &f/xpbottle give <player> <amount>'
+  invalid-bottle-data: '&cThat XP bottle has invalid data and could not be redeemed.'
+  inventory-full-drop: '&eYour inventory is full. The XP bottle was dropped at your feet.'
 
   withdrew-xp: '&aYou withdrew &f%xp% &aXP into a custom bottle.'
   redeemed-xp: '&aYou redeemed &f%xp% &aXP from a custom bottle.'

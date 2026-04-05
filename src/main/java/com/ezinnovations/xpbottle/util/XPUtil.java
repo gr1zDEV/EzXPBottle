@@ -9,7 +9,7 @@ public final class XPUtil {
 
     public static int getTotalExperience(Player player) {
         int levelBase = getExperienceAtLevel(player.getLevel());
-        int progress = Math.round(player.getExp() * player.getExpToLevel());
+        int progress = (int) Math.floor(player.getExp() * player.getExpToLevel());
         return Math.max(0, levelBase + progress);
     }
 
@@ -47,8 +47,8 @@ public final class XPUtil {
             return level * level + (6 * level);
         }
         if (level <= 31) {
-            return (int) (2.5 * level * level - 40.5 * level + 360);
+            return (int) Math.floor(2.5 * level * level - 40.5 * level + 360);
         }
-        return (int) (4.5 * level * level - 162.5 * level + 2220);
+        return (int) Math.floor(4.5 * level * level - 162.5 * level + 2220);
     }
 }

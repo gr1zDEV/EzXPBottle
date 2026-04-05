@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -20,6 +21,9 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class XPBottleItemManager {
 
+    private static final int MAX_STORED_XP = 1_000_000_000;
+
+    private final XPBottlePlugin plugin;
     private final ConfigManager configManager;
     private final MessageManager messageManager;
     private final NamespacedKey bottleKey;
@@ -27,6 +31,7 @@ public class XPBottleItemManager {
     private final NamespacedKey versionKey;
 
     public XPBottleItemManager(XPBottlePlugin plugin, ConfigManager configManager, MessageManager messageManager) {
+        this.plugin = plugin;
         this.configManager = configManager;
         this.messageManager = messageManager;
         this.bottleKey = new NamespacedKey(plugin, "is_xpbottle");
@@ -35,18 +40,21 @@ public class XPBottleItemManager {
     }
 
     public ItemStack createBottle(int xpAmount) {
-        Material material = Material.matchMaterial(configManager.getItemConfig().getString("item.material", "EXPERIENCE_BOTTLE"));
-        if (material == null) {
-            material = Material.EXPERIENCE_BOTTLE;
-        }
+        int safeXpAmount = Math.max(1, Math.min(MAX_STORED_XP, xpAmount));
+        Material material = parseMaterial(configManager.getItemConfig().getString("item.material", "EXPERIENCE_BOTTLE"), Material.EXPERIENCE_BOTTLE, "item.material");
 
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta == null) {
-            return item;
+            plugin.getLogger().warning("Failed to create XP bottle item meta. Falling back to vanilla EXPERIENCE_BOTTLE metadata.");
+            item = new ItemStack(Material.EXPERIENCE_BOTTLE);
+            meta = item.getItemMeta();
+            if (meta == null) {
+                return item;
+            }
         }
 
-        Map<String, String> placeholders = Map.of("%xp%", String.valueOf(xpAmount));
+        Map<String, String> placeholders = Map.of("%xp%", String.valueOf(safeXpAmount));
         String name = replacePlaceholders(configManager.getItemConfig().getString("item.name", "&bXP Bottle &7(&f%xp%&7)"), placeholders);
         List<String> lore = configManager.getItemConfig().getStringList("item.lore").stream()
             .map(line -> replacePlaceholders(line, placeholders))
@@ -67,7 +75,7 @@ public class XPBottleItemManager {
         }
 
         meta.getPersistentDataContainer().set(bottleKey, PersistentDataType.BYTE, (byte) 1);
-        meta.getPersistentDataContainer().set(xpKey, PersistentDataType.INTEGER, xpAmount);
+        meta.getPersistentDataContainer().set(xpKey, PersistentDataType.INTEGER, safeXpAmount);
         meta.getPersistentDataContainer().set(versionKey, PersistentDataType.INTEGER, 1);
 
         item.setItemMeta(meta);
@@ -80,6 +88,9 @@ public class XPBottleItemManager {
         }
 
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return false;
+        }
         Byte marker = meta.getPersistentDataContainer().get(bottleKey, PersistentDataType.BYTE);
         return marker != null && marker == (byte) 1;
     }
@@ -90,8 +101,20 @@ public class XPBottleItemManager {
         }
 
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return -1;
+        }
+
+        Integer version = meta.getPersistentDataContainer().get(versionKey, PersistentDataType.INTEGER);
+        if (version == null || version != 1) {
+            return -1;
+        }
+
         Integer xp = meta.getPersistentDataContainer().get(xpKey, PersistentDataType.INTEGER);
-        return xp == null ? -1 : xp;
+        if (xp == null || xp <= 0 || xp > MAX_STORED_XP) {
+            return -1;
+        }
+        return xp;
     }
 
     public boolean giveBottle(Player player, int xpAmount) {
@@ -101,7 +124,10 @@ public class XPBottleItemManager {
 
         ItemStack bottle = createBottle(xpAmount);
         HashMap<Integer, ItemStack> leftovers = player.getInventory().addItem(bottle);
-        leftovers.values().forEach(leftover -> player.getWorld().dropItemNaturally(player.getLocation(), leftover));
+        if (!leftovers.isEmpty()) {
+            leftovers.values().forEach(leftover -> player.getWorld().dropItemNaturally(player.getLocation(), leftover));
+            messageManager.send(player, "messages.inventory-full-drop");
+        }
         return true;
     }
 
@@ -118,37 +144,70 @@ public class XPBottleItemManager {
         return true;
     }
 
-    public int redeemFromHand(Player player, boolean redeemAllSameBottleFromHand) {
-        PlayerInventory inventory = player.getInventory();
-        ItemStack main = inventory.getItemInMainHand();
-        ItemStack off = inventory.getItemInOffHand();
-
-        ItemStack target = isPluginBottle(main) ? main : isPluginBottle(off) ? off : null;
-        if (target == null) {
+    public int redeemFromHand(Player player, EquipmentSlot hand, boolean redeemAllInClickedHand) {
+        ItemStack target = getHandItem(player.getInventory(), hand);
+        if (!isPluginBottle(target)) {
             return -1;
         }
 
-        int xp = getStoredXp(target);
-        if (xp <= 0) {
+        int xpPerBottle = getStoredXp(target);
+        if (xpPerBottle <= 0) {
             return -1;
         }
 
-        int redeemed = xp;
-        if (redeemAllSameBottleFromHand) {
-            int count = target.getAmount();
-            redeemed = xp * count;
-            target.setAmount(0);
+        int redeemed;
+        if (redeemAllInClickedHand) {
+            int stackAmount = target.getAmount();
+            try {
+                redeemed = Math.multiplyExact(xpPerBottle, stackAmount);
+            } catch (ArithmeticException ex) {
+                return -1;
+            }
+            setHandItem(player.getInventory(), hand, null);
         } else {
-            int amount = target.getAmount();
-            if (amount <= 1) {
-                target.setAmount(0);
+            redeemed = xpPerBottle;
+            int stackAmount = target.getAmount();
+            if (stackAmount <= 1) {
+                setHandItem(player.getInventory(), hand, null);
             } else {
-                target.setAmount(amount - 1);
+                target.setAmount(stackAmount - 1);
+                setHandItem(player.getInventory(), hand, target);
             }
         }
 
         XPUtil.addExactExperience(player, redeemed);
         return redeemed;
+    }
+
+    public boolean consumeInvalidBottleFromHand(Player player, EquipmentSlot hand) {
+        ItemStack target = getHandItem(player.getInventory(), hand);
+        if (!isPluginBottle(target)) {
+            return false;
+        }
+
+        int stackAmount = target.getAmount();
+        if (stackAmount <= 1) {
+            setHandItem(player.getInventory(), hand, null);
+        } else {
+            target.setAmount(stackAmount - 1);
+            setHandItem(player.getInventory(), hand, target);
+        }
+        return true;
+    }
+
+    private ItemStack getHandItem(PlayerInventory inventory, EquipmentSlot hand) {
+        if (hand == EquipmentSlot.OFF_HAND) {
+            return inventory.getItemInOffHand();
+        }
+        return inventory.getItemInMainHand();
+    }
+
+    private void setHandItem(PlayerInventory inventory, EquipmentSlot hand, ItemStack item) {
+        if (hand == EquipmentSlot.OFF_HAND) {
+            inventory.setItemInOffHand(item);
+            return;
+        }
+        inventory.setItemInMainHand(item);
     }
 
     private String replacePlaceholders(String text, Map<String, String> placeholders) {
@@ -159,11 +218,16 @@ public class XPBottleItemManager {
         return output;
     }
 
-    public int getTotalXp(Player player) {
-        return XPUtil.getTotalExperience(player);
+    private Material parseMaterial(String name, Material fallback, String pathForLog) {
+        Material material = Material.matchMaterial(name);
+        if (material == null) {
+            plugin.getLogger().warning("Invalid material at " + pathForLog + ": " + name + ". Falling back to " + fallback);
+            return fallback;
+        }
+        return material;
     }
 
-    public MessageManager getMessageManager() {
-        return messageManager;
+    public int getTotalXp(Player player) {
+        return XPUtil.getTotalExperience(player);
     }
 }
