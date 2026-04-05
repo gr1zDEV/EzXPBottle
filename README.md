@@ -8,9 +8,10 @@ It lets players withdraw exact raw XP points into custom XP bottle items and red
 - `/xpbottle` GUI with configurable title, size, filler, info, close button, presets, and withdraw-all button.
 - Exact XP handling (raw point math) for withdraw and redeem.
 - Custom XP bottles identified with `PersistentDataContainer` keys (not lore-only).
-- Right-click redeem behavior that cancels vanilla bottle use for plugin bottles.
-- Optional shift-right-click redeem-all-in-hand behavior.
+- Right-click redeem behavior that cancels vanilla bottle use only for plugin bottles, with per-hand safety.
+- Optional shift-right-click redeem-all-in-hand behavior (clicked hand only, no dual-hand double-redeem).
 - Admin give command for preloaded custom bottles.
+- Safe handling for invalid/corrupt bottle metadata and inventory-full drop behavior.
 - Config split across `config.yml`, `gui.yml`, `item.yml`, `messages.yml`.
 - PlaceholderAPI softdepend placeholders:
   - `%xpbottle_total_xp%`

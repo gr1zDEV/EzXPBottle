@@ -27,7 +27,7 @@ public class XPBottlePlugin extends JavaPlugin {
         this.itemManager = new XPBottleItemManager(this, configManager, messageManager);
         this.guiManager = new XPBottleGuiManager(this, configManager, messageManager, itemManager);
 
-        XPBottleCommand commandExecutor = new XPBottleCommand(this, configManager, messageManager, guiManager, itemManager);
+        XPBottleCommand commandExecutor = new XPBottleCommand(this, messageManager, guiManager, itemManager);
         PluginCommand command = getCommand("xpbottle");
         if (command != null) {
             command.setExecutor(commandExecutor);

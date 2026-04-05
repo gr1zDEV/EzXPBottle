@@ -4,6 +4,8 @@ import com.ezinnovations.xpbottle.config.ConfigManager;
 import com.ezinnovations.xpbottle.config.MessageManager;
 import com.ezinnovations.xpbottle.item.XPBottleItemManager;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -12,13 +14,17 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerRedeemListener implements Listener {
 
+    private static final long REDEEM_COOLDOWN_MS = 75L;
+
     private final ConfigManager configManager;
     private final MessageManager messageManager;
     private final XPBottleItemManager itemManager;
+    private final Map<String, Long> lastRedeemByHand = new ConcurrentHashMap<>();
 
     public PlayerRedeemListener(ConfigManager configManager, MessageManager messageManager, XPBottleItemManager itemManager) {
         this.configManager = configManager;
@@ -33,6 +39,11 @@ public class PlayerRedeemListener implements Listener {
             return;
         }
 
+        EquipmentSlot hand = event.getHand();
+        if (hand == null) {
+            return;
+        }
+
         Player player = event.getPlayer();
         if (!player.hasPermission("xpbottle.redeem")) {
             return;
@@ -43,12 +54,21 @@ public class PlayerRedeemListener implements Listener {
             return;
         }
 
+        if (isRedeemOnCooldown(player.getUniqueId(), hand)) {
+            event.setCancelled(true);
+            return;
+        }
+
         event.setCancelled(true);
 
         FileConfiguration config = configManager.getMainConfig();
         boolean shiftRedeemAllEnabled = config.getBoolean("redeem.shift-right-click-redeem-all", true) && player.isSneaking();
-        int redeemed = itemManager.redeemFromHand(player, shiftRedeemAllEnabled);
+        int redeemed = itemManager.redeemFromHand(player, hand, shiftRedeemAllEnabled);
         if (redeemed <= 0) {
+            boolean consumed = itemManager.consumeInvalidBottleFromHand(player, hand);
+            if (consumed) {
+                messageManager.send(player, "messages.invalid-bottle-data");
+            }
             return;
         }
 
@@ -63,5 +83,16 @@ public class PlayerRedeemListener implements Listener {
                 // Invalid sound, safely skip.
             }
         }
+    }
+
+    private boolean isRedeemOnCooldown(UUID playerId, EquipmentSlot hand) {
+        long now = System.currentTimeMillis();
+        String key = playerId + ":" + hand.name();
+        Long last = lastRedeemByHand.get(key);
+        if (last != null && (now - last) < REDEEM_COOLDOWN_MS) {
+            return true;
+        }
+        lastRedeemByHand.put(key, now);
+        return false;
     }
 }

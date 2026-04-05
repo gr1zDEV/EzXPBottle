@@ -109,7 +109,7 @@ public class XPBottleGuiManager {
             return true;
         }
 
-        if (slot == 4 || isFillerSlot(clicked)) {
+        if (slot == 4 || isFillerItem(clicked)) {
             return true;
         }
 
@@ -182,6 +182,7 @@ public class XPBottleGuiManager {
         String materialName = gui.getString(path + ".material", "GRAY_STAINED_GLASS_PANE");
         Material material = Material.matchMaterial(materialName);
         if (material == null) {
+            plugin.getLogger().warning("Invalid GUI material at " + path + ".material: " + materialName + ". Falling back to BARRIER.");
             material = Material.BARRIER;
         }
 
@@ -211,13 +212,13 @@ public class XPBottleGuiManager {
         return item;
     }
 
-    private boolean isFillerSlot(ItemStack clicked) {
+    private boolean isFillerItem(ItemStack clicked) {
         if (clicked == null || clicked.getType().isAir()) {
             return false;
         }
-        String fillerType = configManager.getGuiConfig().getString("gui.filler.material", "GRAY_STAINED_GLASS_PANE");
-        Material material = Material.matchMaterial(fillerType);
-        return material != null && clicked.getType() == material;
+
+        ItemStack filler = buildSimpleItem("gui.filler", Collections.emptyMap());
+        return filler != null && clicked.isSimilar(filler);
     }
 
     private int sanitizeSize(int size) {

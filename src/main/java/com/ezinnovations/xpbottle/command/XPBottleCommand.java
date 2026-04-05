@@ -1,12 +1,12 @@
 package com.ezinnovations.xpbottle.command;
 
 import com.ezinnovations.xpbottle.XPBottlePlugin;
-import com.ezinnovations.xpbottle.config.ConfigManager;
 import com.ezinnovations.xpbottle.config.MessageManager;
 import com.ezinnovations.xpbottle.gui.XPBottleGuiManager;
 import com.ezinnovations.xpbottle.item.XPBottleItemManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
@@ -19,18 +19,15 @@ import org.bukkit.entity.Player;
 public class XPBottleCommand implements CommandExecutor, TabCompleter {
 
     private final XPBottlePlugin plugin;
-    private final ConfigManager configManager;
     private final MessageManager messageManager;
     private final XPBottleGuiManager guiManager;
     private final XPBottleItemManager itemManager;
 
     public XPBottleCommand(XPBottlePlugin plugin,
-                           ConfigManager configManager,
                            MessageManager messageManager,
                            XPBottleGuiManager guiManager,
                            XPBottleItemManager itemManager) {
         this.plugin = plugin;
-        this.configManager = configManager;
         this.messageManager = messageManager;
         this.guiManager = guiManager;
         this.itemManager = itemManager;
@@ -51,12 +48,12 @@ public class XPBottleCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        switch (args[0].toLowerCase()) {
+        switch (args[0].toLowerCase(Locale.ROOT)) {
             case "help" -> handleHelp(sender);
             case "reload" -> handleReload(sender);
             case "withdraw" -> handleWithdraw(sender, args);
             case "give" -> handleGive(sender, args);
-            default -> handleHelp(sender);
+            default -> messageManager.send(sender, "messages.unknown-subcommand");
         }
         return true;
     }
@@ -86,8 +83,8 @@ public class XPBottleCommand implements CommandExecutor, TabCompleter {
             messageManager.send(sender, "messages.no-permission");
             return;
         }
-        if (args.length < 2) {
-            messageManager.send(sender, "messages.invalid-amount");
+        if (args.length != 2) {
+            messageManager.send(sender, "messages.withdraw-usage");
             return;
         }
 
@@ -119,8 +116,8 @@ public class XPBottleCommand implements CommandExecutor, TabCompleter {
             messageManager.send(sender, "messages.no-permission");
             return;
         }
-        if (args.length < 3) {
-            messageManager.send(sender, "messages.invalid-amount");
+        if (args.length != 3) {
+            messageManager.send(sender, "messages.give-usage");
             return;
         }
 
@@ -152,23 +149,33 @@ public class XPBottleCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            List<String> subcommands = List.of("help", "withdraw", "reload", "give");
-            return subcommands.stream().filter(s -> s.startsWith(args[0].toLowerCase())).collect(Collectors.toList());
+            List<String> subcommands = new ArrayList<>();
+            subcommands.add("help");
+            if (sender.hasPermission("xpbottle.withdraw")) {
+                subcommands.add("withdraw");
+            }
+            if (sender.hasPermission("xpbottle.reload")) {
+                subcommands.add("reload");
+            }
+            if (sender.hasPermission("xpbottle.give")) {
+                subcommands.add("give");
+            }
+            return subcommands.stream().filter(s -> s.startsWith(args[0].toLowerCase(Locale.ROOT))).collect(Collectors.toList());
         }
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("give") && sender.hasPermission("xpbottle.give")) {
             return Bukkit.getOnlinePlayers().stream().map(Player::getName)
-                .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(args[1].toLowerCase(Locale.ROOT)))
                 .collect(Collectors.toList());
         }
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("withdraw")) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("withdraw") && sender.hasPermission("xpbottle.withdraw")) {
             return List.of("10", "50", "100", "500").stream()
                 .filter(s -> s.startsWith(args[1]))
                 .collect(Collectors.toList());
         }
 
-        if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
+        if (args.length == 3 && args[0].equalsIgnoreCase("give") && sender.hasPermission("xpbottle.give")) {
             return List.of("10", "50", "100", "500").stream()
                 .filter(s -> s.startsWith(args[2]))
                 .collect(Collectors.toList());
