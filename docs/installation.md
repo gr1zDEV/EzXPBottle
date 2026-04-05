@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Java 17 or newer.
+- Java 21 or newer.
 - A supported server implementation:
   - Paper
   - Folia

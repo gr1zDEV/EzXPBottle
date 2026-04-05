@@ -66,7 +66,7 @@ Full project documentation is available in the [`docs/`](docs/) folder.
 ## Build
 
 Requirements:
-- Java 17+
+- Java 21+
 - Maven 3.8+
 
 Build command:
