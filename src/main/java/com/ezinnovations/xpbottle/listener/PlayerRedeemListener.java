@@ -27,7 +27,7 @@ public class PlayerRedeemListener implements Listener {
     private final ConfigManager configManager;
     private final MessageManager messageManager;
     private final XPBottleItemManager itemManager;
-    private final Map<String, Long> lastRedeemByHand = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastRedeemByPlayer = new ConcurrentHashMap<>();
 
     public PlayerRedeemListener(ConfigManager configManager, MessageManager messageManager, XPBottleItemManager itemManager) {
         this.configManager = configManager;
@@ -35,7 +35,7 @@ public class PlayerRedeemListener implements Listener {
         this.itemManager = itemManager;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onInteract(PlayerInteractEvent event) {
         Action action = event.getAction();
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
@@ -48,9 +48,11 @@ public class PlayerRedeemListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        ItemStack item = player.getInventory().getItem(hand);
+        ItemStack item = event.getItem();
         if (item == null) {
-            item = event.getItem();
+            item = (hand == EquipmentSlot.OFF_HAND)
+                    ? player.getInventory().getItemInOffHand()
+                    : player.getInventory().getItemInMainHand();
         }
         if (!itemManager.isPluginBottle(item)) {
             return;
@@ -62,13 +64,14 @@ public class PlayerRedeemListener implements Listener {
             return;
         }
 
-        if (isRedeemOnCooldown(player.getUniqueId(), hand)) {
+        if (isRedeemOnCooldown(player.getUniqueId())) {
             event.setCancelled(true);
             return;
         }
 
         event.setCancelled(true);
         event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
 
         FileConfiguration config = configManager.getMainConfig();
         boolean shiftRedeemAllEnabled = config.getBoolean("redeem.shift-right-click-redeem-all", true) && player.isSneaking();
@@ -120,14 +123,13 @@ public class PlayerRedeemListener implements Listener {
         }
     }
 
-    private boolean isRedeemOnCooldown(UUID playerId, EquipmentSlot hand) {
+    private boolean isRedeemOnCooldown(UUID playerId) {
         long now = System.currentTimeMillis();
-        String key = playerId + ":" + hand.name();
-        Long last = lastRedeemByHand.get(key);
+        Long last = lastRedeemByPlayer.get(playerId);
         if (last != null && (now - last) < REDEEM_COOLDOWN_MS) {
             return true;
         }
-        lastRedeemByHand.put(key, now);
+        lastRedeemByPlayer.put(playerId, now);
         return false;
     }
 }
