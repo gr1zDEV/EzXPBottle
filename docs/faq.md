@@ -1,33 +1,34 @@
 # FAQ
 
-## Why does XPBottle use custom bottles?
+## Requirements
 
-XPBottle stores exact values in item metadata so the redeemed XP matches the withdrawn XP precisely.
+- Access to server logs.
+- Access to XPBottle config files.
 
-## Does XPBottle work on Folia?
+## Common Questions
 
-Yes. XPBottle is designed for Paper and Folia environments.
+### Why does `/xpbottle` not open a menu?
 
-## Does XPBottle support PlaceholderAPI?
+- Check player has `xpbottle.use`.
+- Verify command is not being executed from console.
+- Confirm plugin enabled without startup errors.
 
-Yes, optionally. If PlaceholderAPI is installed, XPBottle registers `%xpbottle_total_xp%` and `%xpbottle_level%`.
+### Why can players withdraw but not redeem?
 
-## Why does one bottle give exact XP instead of vanilla random XP?
+- Check `xpbottle.redeem` permission.
+- Ensure players are right-clicking XPBottle custom items, not vanilla bottles.
 
-Because XPBottle cancels vanilla bottle behavior for its own marked items and redeems the exact stored integer XP value.
+### Why do bottles drop on the ground?
 
-## What happens if my inventory is full when I withdraw or get a bottle?
+- Inventory had no available slot during withdraw/give.
+- Plugin sends `messages.inventory-full-drop` in this case.
 
-XPBottle drops the custom bottle at your feet and sends an inventory-full message.
+### Do config changes require restart?
 
-## Can I change GUI amounts and button layout?
+- Usually no. Use `/xpbottle reload`.
+- Restart is safer after large YAML edits or dependency/plugin updates.
 
-Yes. Edit `gui.yml` (`gui.preset-amounts`, slot values, button materials/names/lore, and withdraw-all settings).
+### Is PlaceholderAPI required?
 
-## Can players redeem from offhand?
-
-Yes. Redeem logic uses the hand from the click event and consumes/redeems from that specific hand.
-
-## Can players redeem a whole stack at once?
-
-Yes, if `redeem.shift-right-click-redeem-all` is enabled in `config.yml` and the player is sneaking.
+- No.
+- It is optional and only needed for `%xpbottle_*%` placeholders.
